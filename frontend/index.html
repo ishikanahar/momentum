@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>MOMentum Mobile</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Nunito+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   THEME VARIABLES
+═══════════════════════════════════════════ */
+:root {
+  --mint: #c8f0e0; --mint-dark: #3dbf85; --mint-text: #1a7a52;
+  --peach: #fde8d8; --peach-dark: #f07850; --peach-text: #b84420;
+  --lavender: #e8e0f8; --lavender-dark: #8b6fd4; --lavender-text: #5a3fa8;
+  --sky: #d8eeff; --sky-dark: #4da6e8; --sky-text: #1a5c9e;
+  --butter: #fff3d0; --butter-dark: #e8a020; --butter-text: #8a5a00;
+  --rose: #fde0e8; --rose-dark: #e85080; --rose-text: #9e1a40;
+}
+
+[data-theme="light"] {
+  --bg: #f0ede8; --surface: #faf8f5; --surface2: #f0ece6;
+  --card: #ffffff; --border: rgba(0,0,0,0.07);
+  --text: #2d2820; --text2: #6b6058; --text3: #a09888;
+  --shadow: 0 4px 20px rgba(0,0,0,0.07); --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+  --phone-bg: #d8d3cc;
+  --nav-bg: rgba(250,248,245,0.96);
+  --notif-bg: rgba(45,40,32,0.92);
+}
+
+[data-theme="dark"] {
+  --bg: #141218; --surface: #1c1a22; --surface2: #231f2c;
+  --card: #1f1d28; --border: rgba(255,255,255,0.08);
+  --text: #f0ecf8; --text2: #9a93aa; --text3: #5a5268;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4); --shadow-sm: 0 2px 10px rgba(0,0,0,0.3);
+  --phone-bg: #0a0810;
+  --nav-bg: rgba(28,26,34,0.97);
+  --notif-bg: rgba(30,28,40,0.97);
+  --mint: #1a3d2e; --mint-dark: #3dbf85; --mint-text: #7ee8b8;
+  --peach: #3d2218; --peach-dark: #f07850; --peach-text: #f8b090;
+  --lavender: #2a2048; --lavender-dark: #a080f0; --lavender-text: #c0a8ff;
+  --sky: #0e2a40; --sky-dark: #4da6e8; --sky-text: #90d0ff;
+  --butter: #332800; --butter-dark: #e8a020; --butter-text: #ffd070;
+  --rose: #3a1028; --rose-dark: #e85080; --rose-text: #ffa0c0;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+  background: var(--phone-bg);
+  display: flex; justify-content: center; align-items: center;
+  min-height: 100vh; font-family: 'Nunito', sans-serif;
+  padding: 20px 0; transition: background 0.3s;
+}
+
+/* ── PHONE SHELL ── */
+.phone {
+  width: 390px; height: 844px;
+  background: var(--bg);
+  border-radius: 52px;
+  box-shadow: 0 0 0 12px #1a1a1a, 0 0 0 14px #3a3a3a, 0 40px 80px rgba(0,0,0,0.5);
+  overflow: hidden; position: relative;
+  display: flex; flex-direction: column;
+  transition: background 0.3s;
+}
+
+.notch {
+  position: absolute; top:0; left:50%; transform:translateX(-50%);
+  width:120px; height:34px; background:#1a1a1a;
+  border-radius:0 0 22px 22px; z-index:100;
+}
+
+/* Status bar */
+.status-bar {
+  height:52px; display:flex; align-items:flex-end;
+  justify-content:space-between; padding:0 28px 8px;
+  font-size:12px; font-weight:700; color:var(--text2);
+  flex-shrink:0; z-index:10;
+}
+.status-right { display:flex; gap:6px; align-items:center; font-size:11px; }
+
+.battery-warning {
+  background: var(--peach-dark);
+  color: white;
+  font-size: 10px; font-weight: 800;
+  padding: 2px 8px; border-radius: 100px;
+  animation: battPulse 1.5s infinite;
+  display: flex; align-items: center; gap: 4px;
+}
+@keyframes battPulse { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
+
+/* Screen */
+.screen { flex:1; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; scroll-behavior:smooth; }
+.screen::-webkit-scrollbar { display:none; }
+
+.tab-page { display:none; }
+.tab-page.active { display:block; }
+
+/* ─────────────────────────────────
+   PUSH NOTIFICATION OVERLAY
+───────────────────────────────── */
+.push-notif-overlay {
+  position: absolute; top:60px; left:16px; right:16px;
+  z-index: 200; pointer-events:none;
+}
+
+.push-notif {
+  background: var(--notif-bg);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  display: flex; align-items: flex-start; gap: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  transform: translateY(-120%);
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+  pointer-events: all;
+  cursor: pointer;
+}
+
+.push-notif.show { transform: translateY(0); opacity: 1; }
+
+.push-icon {
+  width: 40px; height: 40px; border-radius: 12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; flex-shrink:0;
+}
+
+.push-content { flex:1; }
+.push-app { font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:#9a93aa; margin-bottom:3px; }
+.push-title { font-size:14px; font-weight:800; color:#f0ecf8; line-height:1.3; margin-bottom:3px; }
+.push-body { font-size:12px; color:#9a93aa; font-weight:600; line-height:1.4; }
+.push-time { font-size:11px; color:#5a5268; font-weight:700; white-space:nowrap; }
+.push-tap { font-size:10px; color: var(--mint-dark); font-weight:800; margin-top:5px; }
+
+/* ─────────────────────────────────
+   COMMON COMPONENTS
+───────────────────────────────── */
+.section-head { display:flex; justify-content:space-between; align-items:center; padding:20px 24px 12px; }
+.section-title { font-size:16px; font-weight:900; color:var(--text); }
+.section-more { font-size:12px; font-weight:700; color:var(--lavender-dark); cursor:pointer; }
+
+.bottom-space { height:90px; }
+
+/* Tags */
+.tag { font-size:10px; font-weight:800; padding:2px 7px; border-radius:6px; letter-spacing:0.3px; }
+.tag-canvas { background:var(--sky); color:var(--sky-text); }
+.tag-notion { background:var(--butter); color:var(--butter-text); }
+.tag-urgent { background:var(--peach); color:var(--peach-text); }
+.tag-done { background:var(--mint); color:var(--mint-text); }
+.tag-event { background:var(--rose); color:var(--rose-text); }
+
+/* Tasks */
+.task {
+  margin:0 24px 8px; background:var(--card);
+  border-radius:16px; padding:14px 16px;
+  display:flex; align-items:center; gap:12px;
+  box-shadow:var(--shadow-sm); border:1px solid var(--border);
+  cursor:pointer; transition:transform 0.15s, background 0.3s;
+}
+.task:active { transform:scale(0.98); }
+.task-check {
+  width:22px; height:22px; border-radius:7px;
+  border:2px solid var(--border); background:var(--surface2);
+  flex-shrink:0; display:flex; align-items:center; justify-content:center;
+  transition:all 0.2s;
+}
+.task-check.done { background:var(--mint-dark); border-color:var(--mint-dark); }
+.task-check.done::after { content:'✓'; font-size:13px; color:white; font-weight:900; }
+.task-info { flex:1; }
+.task-name { font-size:14px; font-weight:700; color:var(--text); transition:color 0.2s; }
+.task-name.done { text-decoration:line-through; color:var(--text3); }
+.task-tags { display:flex; gap:5px; margin-top:4px; flex-wrap:wrap; }
+.task-due { font-size:11px; font-weight:700; color:var(--text3); white-space:nowrap; }
+
+/* ─────────────────────────────────
+   HOME TAB
+───────────────────────────────── */
+.home-header { padding:20px 24px 0; }
+.greeting-row { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; }
+.greeting { font-size:13px; color:var(--text3); font-weight:600; letter-spacing:0.3px; }
+.name { font-size:26px; font-weight:900; color:var(--text); letter-spacing:-0.5px; line-height:1.1; }
+
+.top-right-actions { display:flex; gap:8px; align-items:flex-start; }
+.theme-toggle {
+  width:36px; height:36px; border-radius:12px;
+  background:var(--surface2); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; cursor:pointer; transition:all 0.2s;
+}
+.theme-toggle:active { transform:scale(0.9); }
+.avatar {
+  width:42px; height:42px; border-radius:14px;
+  background:linear-gradient(135deg, var(--lavender-dark), var(--sky-dark));
+  display:flex; align-items:center; justify-content:center; font-size:20px;
+  box-shadow:var(--shadow-sm);
+}
+
+.context-pill {
+  margin:14px 24px 0; display:inline-flex; align-items:center; gap:8px;
+  background:var(--card); border-radius:100px; padding:8px 14px 8px 10px;
+  box-shadow:var(--shadow-sm); border:1px solid var(--border);
+}
+.ctx-dot { width:8px; height:8px; border-radius:50%; background:var(--mint-dark); animation:breathe 2s infinite; }
+@keyframes breathe { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(0.7);opacity:0.5;} }
+.ctx-text { font-size:12px; font-weight:700; color:var(--text2); }
+.ctx-sub { font-size:11px; color:var(--text3); font-weight:600; }
+
+/* Battery alert banner */
+.battery-banner {
+  margin:12px 24px 0;
+  background:linear-gradient(135deg, var(--peach), #ffd0c0);
+  border-radius:16px; padding:12px 14px;
+  display:flex; align-items:center; gap:10px;
+  border:1px solid var(--peach-dark);
+  animation:slideUp 0.4s ease;
+}
+[data-theme="dark"] .battery-banner {
+  background:linear-gradient(135deg, #3d1808, #2a1008);
+  border-color: var(--peach-dark);
+}
+.batt-icon { font-size:24px; }
+.batt-text { flex:1; }
+.batt-title { font-size:13px; font-weight:800; color:var(--peach-text); }
+.batt-sub { font-size:11px; color:var(--peach-text); font-weight:600; opacity:0.8; margin-top:2px; }
+
+/* NOW card */
+.now-card {
+  margin:16px 24px 0;
+  background:linear-gradient(145deg, #2d2820 0%, #1e1a28 100%);
+  border-radius:24px; padding:22px; position:relative; overflow:hidden;
+  box-shadow:0 8px 32px rgba(45,40,32,0.3);
+}
+[data-theme="dark"] .now-card { background:linear-gradient(145deg, #1a1628 0%, #12101e 100%); }
+.now-card::before {
+  content:''; position:absolute; top:-40px; right:-40px;
+  width:160px; height:160px;
+  background:radial-gradient(circle, rgba(61,191,133,0.12) 0%, transparent 70%);
+}
+.now-eyebrow { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--mint-dark); font-weight:800; margin-bottom:10px; }
+.now-title { font-size:22px; font-weight:900; color:#fff; letter-spacing:-0.3px; line-height:1.2; margin-bottom:6px; }
+.now-sub { font-size:12px; color:rgba(255,255,255,0.5); font-weight:600; margin-bottom:16px; line-height:1.5; }
+.now-cta {
+  background:var(--mint-dark); color:#fff; border:none; border-radius:100px;
+  padding:11px 20px; font-size:13px; font-weight:800; font-family:'Nunito',sans-serif;
+  cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+  box-shadow:0 4px 16px rgba(61,191,133,0.35); transition:transform 0.15s;
+}
+.now-cta:active { transform:scale(0.95); }
+
+/* Stats row */
+.stats-row { display:flex; gap:10px; padding:16px 24px 0; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.stats-row::-webkit-scrollbar { display:none; }
+.stat-chip {
+  flex-shrink:0; background:var(--card); border-radius:16px; padding:12px 14px;
+  display:flex; flex-direction:column; gap:2px;
+  box-shadow:var(--shadow-sm); border:1px solid var(--border); min-width:85px;
+  transition:background 0.3s;
+}
+.stat-icon { font-size:18px; margin-bottom:4px; }
+.stat-val { font-size:18px; font-weight:900; color:var(--text); letter-spacing:-0.5px; }
+.stat-label { font-size:10px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; }
+
+/* Nudge cards */
+.nudge {
+  margin:0 24px 10px; background:var(--card); border-radius:18px;
+  padding:14px 16px; display:flex; align-items:flex-start; gap:12px;
+  box-shadow:var(--shadow-sm); border:1px solid var(--border);
+  animation:slideUp 0.3s ease both; transition:background 0.3s;
+  cursor:pointer;
+}
+.nudge:active { transform:scale(0.98); }
+@keyframes slideUp { from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:translateY(0);} }
+.nudge-icon-wrap { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.nudge-body { flex:1; }
+.nudge-label { font-size:11px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; margin-bottom:3px; }
+.nudge-text { font-size:13px; font-weight:600; color:var(--text); line-height:1.45; }
+.nudge-time { font-size:11px; color:var(--text3); font-weight:600; margin-top:4px; }
+
+/* ─────────────────────────────────
+   UNEXPECTED EVENTS SECTION
+───────────────────────────────── */
+.event-section {
+  margin: 0 24px 16px;
+}
+
+.event-header-row {
+  display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;
+}
+.event-title { font-size:16px; font-weight:900; color:var(--text); }
+.event-add-btn {
+  background:var(--lavender); color:var(--lavender-dark);
+  border:none; border-radius:100px; padding:6px 12px;
+  font-size:12px; font-weight:800; font-family:'Nunito',sans-serif;
+  cursor:pointer; display:flex; align-items:center; gap:4px;
+}
+
+.event-card {
+  background:var(--card); border-radius:20px; padding:16px;
+  border:1px solid var(--border); box-shadow:var(--shadow-sm);
+  margin-bottom:10px; transition:background 0.3s;
+}
+
+.event-top { display:flex; align-items:flex-start; gap:12px; margin-bottom:12px; }
+.event-emoji { font-size:28px; line-height:1; }
+.event-info { flex:1; }
+.event-name { font-size:16px; font-weight:900; color:var(--text); letter-spacing:-0.3px; }
+.event-time { font-size:12px; color:var(--text3); font-weight:600; margin-top:2px; }
+.event-badge {
+  background:var(--rose); color:var(--rose-text);
+  font-size:10px; font-weight:800; padding:3px 8px; border-radius:8px;
+  letter-spacing:0.3px;
+}
+
+.event-ai-label { font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--mint-dark); margin-bottom:8px; }
+
+.event-adjustments { display:flex; flex-direction:column; gap:6px; }
+.event-adj {
+  display:flex; align-items:center; gap:8px;
+  background:var(--surface2); border-radius:12px; padding:10px 12px;
+}
+.event-adj-icon { font-size:14px; }
+.event-adj-text { flex:1; font-size:12px; font-weight:700; color:var(--text2); line-height:1.4; }
+.event-adj-action {
+  font-size:11px; font-weight:800; color:var(--lavender-dark); cursor:pointer; white-space:nowrap;
+}
+.event-adj.moved { border-left:3px solid var(--mint-dark); background:rgba(61,191,133,0.08); }
+.event-adj.warning { border-left:3px solid var(--peach-dark); }
+.event-adj.info { border-left:3px solid var(--sky-dark); }
+
+/* ─────────────────────────────────
+   DAY SCORE (Visual + Rewarding)
+───────────────────────────────── */
+.score-section { margin: 0 24px 16px; }
+
+.score-card {
+  background: var(--card); border-radius:24px; padding:22px;
+  box-shadow:var(--shadow-sm); border:1px solid var(--border);
+  transition:background 0.3s;
+}
+
+.score-top { display:flex; align-items:center; gap:18px; margin-bottom:20px; }
+
+.score-ring-wrap { position:relative; width:100px; height:100px; flex-shrink:0; }
+.score-ring-wrap svg { width:100px; height:100px; transform:rotate(-90deg); }
+.score-num-wrap {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  text-align:center;
+}
+.score-big { font-size:28px; font-weight:900; color:var(--text); letter-spacing:-1px; line-height:1; }
+.score-slash { font-size:12px; color:var(--text3); font-weight:700; }
+
+.score-right { flex:1; }
+.score-grade {
+  font-size:22px; font-weight:900; letter-spacing:-0.5px; margin-bottom:4px;
+}
+.score-label { font-size:13px; font-weight:700; color:var(--text2); margin-bottom:10px; line-height:1.4; }
+.score-streak { 
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--butter); color:var(--butter-text);
+  border-radius:100px; padding:5px 12px;
+  font-size:11px; font-weight:800;
+}
+
+/* Progress bars */
+.score-bars { display:flex; flex-direction:column; gap:10px; }
+.score-bar-row { display:flex; align-items:center; gap:8px; }
+.score-bar-icon { font-size:14px; width:20px; text-align:center; }
+.score-bar-label { font-size:12px; font-weight:700; color:var(--text2); width:60px; }
+.score-bar-outer { flex:1; height:8px; background:var(--surface2); border-radius:4px; overflow:hidden; }
+.score-bar-fill { height:100%; border-radius:4px; transition:width 1.2s cubic-bezier(0.34,1.2,0.64,1); }
+.score-bar-val { font-size:11px; font-weight:800; color:var(--text); width:32px; text-align:right; }
+
+/* Achievements row */
+.achievements { display:flex; gap:8px; margin-top:16px; overflow-x:auto; }
+.achievements::-webkit-scrollbar { display:none; }
+.achievement {
+  flex-shrink:0; background:var(--surface2); border-radius:14px;
+  padding:10px 12px; text-align:center; min-width:72px;
+  border:1px solid var(--border);
+}
+.ach-icon { font-size:22px; margin-bottom:4px; }
+.ach-label { font-size:10px; font-weight:800; color:var(--text3); line-height:1.3; }
+.achievement.earned { background:var(--mint); border-color:var(--mint-dark); }
+.achievement.earned .ach-label { color:var(--mint-text); }
+
+/* Win banner */
+.win-banner {
+  margin-top:14px; padding:12px 14px;
+  background:linear-gradient(135deg, var(--mint), var(--sky));
+  border-radius:14px; display:flex; align-items:center; gap:10px;
+}
+[data-theme="dark"] .win-banner { background:linear-gradient(135deg, #1a3d2e, #0e2a40); }
+.win-emoji { font-size:22px; }
+.win-text { flex:1; }
+.win-title { font-size:13px; font-weight:800; color:var(--text); }
+.win-sub { font-size:11px; color:var(--text2); font-weight:600; }
+
+/* ─────────────────────────────────
+   CHATBOT TAB
+───────────────────────────────── */
+.chat-header {
+  padding:20px 24px 12px; display:flex; align-items:center; gap:12px;
+}
+.chat-avatar {
+  width:44px; height:44px; border-radius:16px;
+  background:linear-gradient(135deg, #3dbf85, #8b6fd4);
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; box-shadow:var(--shadow-sm);
+}
+.chat-info { flex:1; }
+.chat-name { font-size:17px; font-weight:900; color:var(--text); }
+.chat-status { font-size:12px; color:var(--mint-dark); font-weight:700; }
+
+.chat-messages {
+  padding:0 16px; display:flex; flex-direction:column; gap:12px;
+}
+
+.msg { display:flex; flex-direction:column; max-width:82%; animation:slideUp 0.3s ease; }
+.msg.ai { align-self:flex-start; }
+.msg.user { align-self:flex-end; }
+
+.msg-bubble {
+  padding:12px 15px; border-radius:20px;
+  font-size:14px; font-weight:600; line-height:1.5;
+  position:relative;
+}
+.msg.ai .msg-bubble {
+  background:var(--card); color:var(--text);
+  border:1px solid var(--border);
+  border-bottom-left-radius:6px;
+  box-shadow:var(--shadow-sm);
+}
+.msg.user .msg-bubble {
+  background:linear-gradient(135deg, var(--lavender-dark), var(--sky-dark));
+  color:white; border-bottom-right-radius:6px;
+}
+
+.msg-time { font-size:10px; font-weight:700; color:var(--text3); margin-top:4px; padding:0 4px; }
+.msg.user .msg-time { text-align:right; }
+
+.msg-quick-replies {
+  display:flex; flex-wrap:wrap; gap:6px; margin-top:4px;
+}
+.quick-reply {
+  background:var(--surface2); border:1.5px solid var(--border);
+  border-radius:100px; padding:6px 12px;
+  font-size:12px; font-weight:800; color:var(--lavender-dark);
+  cursor:pointer; transition:all 0.15s; font-family:'Nunito',sans-serif;
+}
+.quick-reply:active { background:var(--lavender); transform:scale(0.96); }
+
+/* Notification push in chat */
+.chat-notif-push {
+  background:linear-gradient(135deg, #2d2820, #1e1a28);
+  border-radius:18px; padding:14px; margin:0 4px;
+  border-left:4px solid var(--peach-dark);
+  animation:slideUp 0.4s ease;
+}
+[data-theme="dark"] .chat-notif-push { background:linear-gradient(135deg, #1a1628, #12101e); }
+.cnp-label { font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:var(--peach-dark); margin-bottom:6px; }
+.cnp-title { font-size:15px; font-weight:900; color:#fff; margin-bottom:5px; line-height:1.3; }
+.cnp-body { font-size:12px; color:rgba(255,255,255,0.6); font-weight:600; line-height:1.5; }
+
+.chat-input-bar {
+  position:absolute; bottom:82px; left:0; right:0;
+  padding:10px 16px; background:var(--nav-bg); backdrop-filter:blur(20px);
+  border-top:1px solid var(--border); display:flex; gap:8px; align-items:center;
+}
+.chat-input {
+  flex:1; background:var(--surface2); border:1.5px solid var(--border);
+  border-radius:100px; padding:10px 16px; font-size:14px; font-weight:600;
+  font-family:'Nunito',sans-serif; color:var(--text); outline:none;
+  transition:border-color 0.2s;
+}
+.chat-input:focus { border-color:var(--lavender-dark); }
+.chat-input::placeholder { color:var(--text3); }
+.chat-send {
+  width:40px; height:40px; border-radius:12px; border:none;
+  background:var(--lavender-dark); color:white;
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; cursor:pointer; transition:transform 0.15s;
+  flex-shrink:0;
+}
+.chat-send:active { transform:scale(0.9); }
+
+/* ─────────────────────────────────
+   LOCATION TAB
+───────────────────────────────── */
+.map-view {
+  height:300px;
+  background:linear-gradient(160deg, #dce8f0 0%, #c8d8e4 60%, #d4e0e8 100%);
+  position:relative; overflow:hidden; flex-shrink:0;
+}
+[data-theme="dark"] .map-view {
+  background:linear-gradient(160deg, #141c24 0%, #0e1820 60%, #101c28 100%);
+}
+.map-view::before {
+  content:''; position:absolute; inset:0;
+  background-image:linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px);
+  background-size:40px 40px;
+}
+[data-theme="dark"] .map-view::before {
+  background-image:linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+}
+
+.road { position:absolute; background:rgba(255,255,255,0.65); border-radius:3px; }
+[data-theme="dark"] .road { background:rgba(255,255,255,0.12); }
+.route-svg { position:absolute; top:0; left:0; width:100%; height:100%; }
+.map-pin { position:absolute; display:flex; flex-direction:column; align-items:center; cursor:pointer; transform:translateX(-50%); }
+.pin-bubble {
+  background:var(--card); border-radius:14px; padding:6px 10px;
+  display:flex; align-items:center; gap:6px;
+  box-shadow:0 4px 16px rgba(0,0,0,0.15);
+  border:2px solid transparent;
+  font-size:12px; font-weight:800; color:var(--text); white-space:nowrap;
+  transition:background 0.3s;
+}
+.pin-bubble.active { border-color:var(--mint-dark); }
+.pin-bubble.past { opacity:0.7; }
+.pin-dot { width:8px; height:8px; border-radius:50%; }
+.pin-tail { width:2px; height:10px; margin-top:-1px; }
+.pin-base { width:8px; height:8px; border-radius:50%; margin-top:-2px; }
+
+.my-location { position:absolute; display:flex; align-items:center; justify-content:center; }
+.loc-pulse { width:18px; height:18px; border-radius:50%; background:var(--mint-dark); border:3px solid white; box-shadow:0 2px 8px rgba(61,191,133,0.5); position:relative; z-index:2; }
+.loc-ring { position:absolute; width:40px; height:40px; border-radius:50%; border:2px solid rgba(61,191,133,0.4); animation:locRing 2s infinite; }
+@keyframes locRing { 0%{transform:scale(0.5);opacity:1;} 100%{transform:scale(1.5);opacity:0;} }
+
+.map-controls { position:absolute; right:16px; top:50px; display:flex; flex-direction:column; gap:6px; }
+.map-btn { width:36px; height:36px; background:var(--card); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; box-shadow:var(--shadow); cursor:pointer; border:none; transition:background 0.3s; }
+.map-status {
+  position:absolute; bottom:12px; left:12px; right:12px;
+  background:var(--card); border-radius:16px; padding:12px 14px;
+  display:flex; align-items:center; gap:10px; box-shadow:var(--shadow);
+  transition:background 0.3s;
+}
+.map-status-icon { width:36px; height:36px; background:var(--mint); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+.map-status-text { flex:1; }
+.map-status-title { font-size:13px; font-weight:800; color:var(--text); }
+.map-status-sub { font-size:11px; color:var(--text3); font-weight:600; }
+.map-status-time { font-size:12px; font-weight:800; color:var(--mint-dark); }
+
+.log-section { padding:0 24px; }
+.log-title { font-size:16px; font-weight:900; color:var(--text); padding:16px 0 12px; }
+
+.log-item { display:flex; gap:14px; margin-bottom:4px; position:relative; }
+.log-item:not(:last-child)::after {
+  content:''; position:absolute; left:17px; top:36px;
+  width:2px; height:calc(100% - 8px);
+  background:var(--border); border-radius:1px;
+}
+.log-icon-col { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+.log-icon { width:36px; height:36px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:17px; position:relative; z-index:1; border:2px solid transparent; flex-shrink:0; }
+.log-icon.current { border-color:var(--mint-dark); }
+.log-content { flex:1; background:var(--card); border-radius:16px; padding:12px 14px; margin-bottom:10px; box-shadow:var(--shadow-sm); border:1px solid var(--border); transition:background 0.3s; }
+.log-content.current { border-color:rgba(61,191,133,0.3); background:rgba(61,191,133,0.05); }
+.log-content.predicted { opacity:0.6; border-style:dashed; }
+.log-place { font-size:14px; font-weight:800; color:var(--text); }
+.log-addr { font-size:11px; color:var(--text3); font-weight:600; margin-top:2px; }
+.log-time-row { display:flex; justify-content:space-between; align-items:center; margin-top:6px; }
+.log-time { font-size:11px; font-weight:700; color:var(--text3); }
+.log-duration { font-size:11px; font-weight:800; padding:2px 8px; border-radius:6px; }
+.log-activity-row { display:flex; gap:5px; margin-top:6px; flex-wrap:wrap; }
+.log-act { font-size:10px; font-weight:800; padding:3px 8px; border-radius:6px; display:flex; align-items:center; gap:3px; }
+
+/* ─────────────────────────────────
+   BOTTOM NAV
+───────────────────────────────── */
+.bottom-nav {
+  position:absolute; bottom:0; left:0; right:0; height:82px;
+  background:var(--nav-bg); backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+  display:flex; align-items:flex-start; padding-top:10px; z-index:50;
+  transition:background 0.3s;
+}
+.nav-item-m { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:4px 0; transition:transform 0.15s; }
+.nav-item-m:active { transform:scale(0.9); }
+.nav-icon-m { width:44px; height:44px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; transition:background 0.2s; }
+.nav-item-m.active .nav-icon-m { background:var(--lavender); }
+.nav-label { font-size:10px; font-weight:800; color:var(--text3); letter-spacing:0.3px; }
+.nav-item-m.active .nav-label { color:var(--lavender-dark); }
+.nav-badge-m { position:absolute; top:-2px; right:-4px; background:var(--peach-dark); color:white; font-size:9px; font-weight:900; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid var(--surface); }
+.nav-icon-wrap { position:relative; display:inline-block; }
+.period-btn {
+  flex:1; text-align:center; padding:8px; border-radius:10px;
+  font-size:12px; font-weight:800; cursor:pointer;
+  background:var(--card); color:var(--text3);
+  border:1px solid var(--border); font-family:'Nunito',sans-serif;
+  transition: all 0.2s;
+}
+.period-btn.active { background:var(--lavender); color:var(--lavender-text); border-color:var(--lavender-dark); }
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+  <div class="notch"></div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span id="status-time">9:41</span>
+    <div class="status-right">
+      <div class="battery-warning">🪫 18%</div>
+      <span>📶</span>
+    </div>
+  </div>
+
+  <!-- Push Notification Overlay -->
+  <div class="push-notif-overlay" id="pushOverlay">
+    <div class="push-notif" id="pushNotif1" onclick="openChatFromPush()">
+      <div class="push-icon" style="background:var(--peach);">🤔</div>
+      <div class="push-content">
+        <div class="push-app">MOMentum · Smart Nudge</div>
+        <div class="push-title">Hey — CS 301 is due at 11:59 PM</div>
+        <div class="push-body">You're at a party right now. Do you still plan on finishing it tonight?</div>
+        <div class="push-tap">Tap to explain →</div>
+      </div>
+      <div class="push-time">Now</div>
+    </div>
+  </div>
+
+  <!-- Screen -->
+  <div class="screen" id="screen">
+
+    <!-- ═══ HOME TAB ═══ -->
+    <div class="tab-page active" id="tab-home">
+      <div class="home-header">
+        <div class="greeting-row">
+          <div>
+            <div class="greeting">Tuesday, Feb 21 ☀️</div>
+            <div class="name">Hey, Ishi!</div>
+          </div>
+          <div class="top-right-actions">
+            <div class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙</div>
+            <div class="avatar">👤</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Battery warning -->
+      <div class="battery-banner">
+        <div class="batt-icon">🪫</div>
+        <div class="batt-text">
+          <div class="batt-title">Charge before you leave!</div>
+          <div class="batt-sub">18% battery — you're heading out at 7 PM. You'll run out by 9 PM.</div>
+        </div>
+        <div style="font-size:22px;">🔌</div>
+      </div>
+
+      <!-- Context pill -->
+      <div class="context-pill">
+        <div class="ctx-dot"></div>
+        <div>
+          <div class="ctx-text">📍 Chipotle, Mission St</div>
+          <div class="ctx-sub">Eating lunch · HR 72 bpm · ~28 min left</div>
+        </div>
+      </div>
+
+      <!-- NOW card -->
+      <div class="now-card">
+        <div class="now-eyebrow">● AI says right now</div>
+        <div class="now-title">You're eating.<br>Use this time wisely.</div>
+        <div class="now-sub">Prof. Martinez email is overdue · CS 301 due at 11:59 PM · Party at 7 PM — schedule adjusted.</div>
+        <button class="now-cta" onclick="switchTab('chat')">✏️ Draft Email Now</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-chip"><div class="stat-icon">❤️</div><div class="stat-val" style="color:#e85080;">72</div><div class="stat-label">BPM</div></div>
+        <div class="stat-chip"><div class="stat-icon">👟</div><div class="stat-val" style="color:#4da6e8;">4.2k</div><div class="stat-label">Steps</div></div>
+        <div class="stat-chip"><div class="stat-icon">📱</div><div class="stat-val" style="color:#8b6fd4;">3h 40m</div><div class="stat-label">Screen</div></div>
+        <div class="stat-chip"><div class="stat-icon">✅</div><div class="stat-val" style="color:#3dbf85;">1/5</div><div class="stat-label">Tasks</div></div>
+        <div class="stat-chip"><div class="stat-icon">😴</div><div class="stat-val" style="color:#e8a020;">6.5h</div><div class="stat-label">Sleep</div></div>
+      </div>
+
+      <!-- UNEXPECTED EVENTS -->
+      <div style="padding:20px 24px 0;">
+        <div class="event-header-row">
+          <div class="event-title">🎉 Unexpected Events</div>
+          <button class="event-add-btn">＋ Add Event</button>
+        </div>
+      </div>
+
+      <div class="event-section">
+        <div class="event-card">
+          <div class="event-top">
+            <div class="event-emoji">🎉</div>
+            <div class="event-info">
+              <div class="event-name">Jake's Birthday Party</div>
+              <div class="event-time">Today · 7:00 PM – Late · Mission District</div>
+            </div>
+            <div class="event-badge">Tonight</div>
+          </div>
+
+          <div class="event-ai-label">✦ AI rescheduled your day around this</div>
+          <div class="event-adjustments">
+            <div class="event-adj moved">
+              <div class="event-adj-icon">📚</div>
+              <div class="event-adj-text">CS 301 moved to 4–6 PM (before party) · 2h window</div>
+              <div class="event-adj-action">View →</div>
+            </div>
+            <div class="event-adj moved">
+              <div class="event-adj-icon">🏋️</div>
+              <div class="event-adj-text">Gym moved to tomorrow 8 AM instead of tonight 6 PM</div>
+              <div class="event-adj-action">Edit</div>
+            </div>
+            <div class="event-adj warning">
+              <div class="event-adj-icon">🪫</div>
+              <div class="event-adj-text">Charge phone now — you'll need it tonight. 18% won't last.</div>
+              <div class="event-adj-action">Got it</div>
+            </div>
+            <div class="event-adj info">
+              <div class="event-adj-icon">📧</div>
+              <div class="event-adj-text">Prof. Martinez email: do it on the bus at 3 PM (35 min ride)</div>
+              <div class="event-adj-action">Remind me</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nudges -->
+      <div class="section-head">
+        <div class="section-title">Smart Nudges</div>
+        <div class="section-more">See all</div>
+      </div>
+
+      <div class="nudge" onclick="switchTab('chat')">
+        <div class="nudge-icon-wrap" style="background:var(--sky);">📚</div>
+        <div class="nudge-body">
+          <div class="nudge-label" style="color:var(--sky-text);">Canvas · Due Tonight</div>
+          <div class="nudge-text">CS 301 starts in 1h 30m — you set aside 4–6 PM. Head to the library after lunch.</div>
+          <div class="nudge-time">📌 Tap to chat about this</div>
+        </div>
+      </div>
+
+      <div class="nudge">
+        <div class="nudge-icon-wrap" style="background:var(--peach);">🪫</div>
+        <div class="nudge-body">
+          <div class="nudge-label" style="color:var(--peach-text);">⚠️ Battery Critical</div>
+          <div class="nudge-text">18% — plug in before 7 PM or your phone dies mid-party. Maps, Uber, everything stops.</div>
+          <div class="nudge-time">⏰ Right now</div>
+        </div>
+      </div>
+
+      <div class="nudge">
+        <div class="nudge-icon-wrap" style="background:var(--lavender);">📺</div>
+        <div class="nudge-body">
+          <div class="nudge-label" style="color:var(--lavender-text);">Heads Up</div>
+          <div class="nudge-text">8 AM class tomorrow. Get home before midnight — you'll need 7h sleep.</div>
+          <div class="nudge-time">🌙 Set reminder?</div>
+        </div>
+      </div>
+
+      <!-- Tasks preview -->
+      <div class="section-head">
+        <div class="section-title">Today's Tasks</div>
+        <div class="section-more" onclick="switchTab('tasks')">See all</div>
+      </div>
+
+      <div class="task" onclick="toggleTask(this)">
+        <div class="task-check done"></div>
+        <div class="task-info"><div class="task-name done">Read Ch. 4 Algorithms</div><div class="task-tags"><span class="tag tag-canvas">Canvas</span><span class="tag tag-done">Done ✓</span></div></div>
+        <div class="task-due">9 AM ✓</div>
+      </div>
+      <div class="task" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-info"><div class="task-name">Email Prof. Martinez</div><div class="task-tags"><span class="tag tag-notion">Notion</span><span class="tag tag-urgent">Overdue</span></div></div>
+        <div class="task-due" style="color:var(--peach-text);">Bus @ 3PM</div>
+      </div>
+      <div class="task" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-info"><div class="task-name">CS 301 — Problem Set 3</div><div class="task-tags"><span class="tag tag-canvas">Canvas</span><span class="tag tag-urgent">4–6 PM slot</span></div></div>
+        <div class="task-due" style="color:var(--peach-text);">11:59 PM</div>
+      </div>
+
+      <!-- DAY SCORE -->
+      <div class="section-head">
+        <div class="section-title">Day Score</div>
+        <div class="section-more" onclick="switchTab('stats')">Full recap</div>
+      </div>
+
+      <div class="score-section">
+        <div class="score-card">
+          <div class="score-top">
+            <div class="score-ring-wrap">
+              <svg viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="var(--surface2)" stroke-width="9"/>
+                <circle cx="50" cy="50" r="42" fill="none" stroke="url(#scoreGrad)" stroke-width="9"
+                  stroke-dasharray="264" stroke-dashoffset="92" stroke-linecap="round"/>
+                <defs>
+                  <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#3dbf85"/>
+                    <stop offset="100%" stop-color="#4da6e8"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div class="score-num-wrap">
+                <div class="score-big">65</div>
+                <div class="score-slash">/100</div>
+              </div>
+            </div>
+
+            <div class="score-right">
+              <div class="score-grade">😊 Good</div>
+              <div class="score-label">You've done 1 of 5 tasks. Gym and homework still ahead.</div>
+              <div class="score-streak">🔥 3-day streak</div>
+            </div>
+          </div>
+
+          <!-- Progress bars -->
+          <div class="score-bars">
+            <div class="score-bar-row">
+              <div class="score-bar-icon">✅</div>
+              <div class="score-bar-label">Tasks</div>
+              <div class="score-bar-outer"><div class="score-bar-fill" style="width:20%;background:#3dbf85;"></div></div>
+              <div class="score-bar-val">1/5</div>
+            </div>
+            <div class="score-bar-row">
+              <div class="score-bar-icon">🧠</div>
+              <div class="score-bar-label">Focus</div>
+              <div class="score-bar-outer"><div class="score-bar-fill" style="width:55%;background:#4da6e8;"></div></div>
+              <div class="score-bar-val">55%</div>
+            </div>
+            <div class="score-bar-row">
+              <div class="score-bar-icon">👟</div>
+              <div class="score-bar-label">Activity</div>
+              <div class="score-bar-outer"><div class="score-bar-fill" style="width:42%;background:#e8a020;"></div></div>
+              <div class="score-bar-val">4.2k</div>
+            </div>
+            <div class="score-bar-row">
+              <div class="score-bar-icon">😴</div>
+              <div class="score-bar-label">Sleep</div>
+              <div class="score-bar-outer"><div class="score-bar-fill" style="width:65%;background:#8b6fd4;"></div></div>
+              <div class="score-bar-val">6.5h</div>
+            </div>
+            <div class="score-bar-row">
+              <div class="score-bar-icon">📱</div>
+              <div class="score-bar-label">Screen</div>
+              <div class="score-bar-outer"><div class="score-bar-fill" style="width:74%;background:#e85080;"></div></div>
+              <div class="score-bar-val">3h 42m</div>
+            </div>
+          </div>
+
+          <!-- Achievements -->
+          <div class="achievements">
+            <div class="achievement earned"><div class="ach-icon">🎓</div><div class="ach-label">On Time<br>to Class</div></div>
+            <div class="achievement earned"><div class="ach-icon">🔥</div><div class="ach-label">3-Day<br>Streak</div></div>
+            <div class="achievement"><div class="ach-icon">🏋️</div><div class="ach-label">Gym<br>Today</div></div>
+            <div class="achievement"><div class="ach-icon">📝</div><div class="ach-label">All Tasks<br>Done</div></div>
+            <div class="achievement"><div class="ach-icon">🌙</div><div class="ach-label">7h+<br>Sleep</div></div>
+          </div>
+
+          <!-- Win -->
+          <div class="win-banner">
+            <div class="win-emoji">🎉</div>
+            <div class="win-text">
+              <div class="win-title">You made every 9 AM class this month!</div>
+              <div class="win-sub">That's 8 in a row. Keep it going tomorrow. 💪</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-space"></div>
+    </div>
+
+    <!-- ═══ CHAT TAB ═══ -->
+    <div class="tab-page" id="tab-chat" style="padding-bottom:140px;">
+      <div class="chat-header">
+        <div class="chat-avatar">🤖</div>
+        <div class="chat-info">
+          <div class="chat-name">MOMentum Mom</div>
+          <div class="chat-status">● Always watching · Always caring</div>
+        </div>
+        <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+
+        <!-- Push notification that started this conversation -->
+        <div class="chat-notif-push">
+          <div class="cnp-label">📍 Location Alert · 9:18 PM</div>
+          <div class="cnp-title">You're at a party — CS 301 is due in 2h 41m.</div>
+          <div class="cnp-body">I can see you're at 2847 Valencia St (Jake's place). Your assignment is due at 11:59 PM. You planned to finish it at 4–6 PM but that window passed. What happened?</div>
+        </div>
+
+        <div class="msg ai">
+          <div class="msg-bubble">
+            Hey Ishi 👀 I noticed you're at Jake's party right now — totally fun, you deserve it! But CS 301 is due at <strong>11:59 PM</strong> and it's already 9:18 PM.<br><br>
+            Did something come up, or are you planning to finish it later tonight?
+          </div>
+          <div class="msg-time">9:18 PM</div>
+          <div class="msg-quick-replies">
+            <div class="quick-reply" onclick="sendQuickReply(this, 'reply1')">I'm leaving soon 👋</div>
+            <div class="quick-reply" onclick="sendQuickReply(this, 'reply2')">I already finished it!</div>
+            <div class="quick-reply" onclick="sendQuickReply(this, 'reply3')">Explain myself...</div>
+          </div>
+        </div>
+
+        <div class="msg user" id="reply1" style="display:none">
+          <div class="msg-bubble">I'm leaving soon, plan to finish it when I get home around 10 PM. I still have time.</div>
+          <div class="msg-time">9:19 PM</div>
+        </div>
+
+        <div class="msg ai" id="reply1-response" style="display:none">
+          <div class="msg-bubble">
+            Got it! That tracks — 10 PM to midnight is 2 hours, which is about how long Problem Set 3 usually takes you. 📊<br><br>
+            A few things to set you up:<br>
+            • I'll remind you at <strong>10:05 PM</strong> to open your laptop<br>
+            • Canvas is already open on your last session<br>
+            • Leave the party by <strong>9:45 PM</strong> to have buffer time<br><br>
+            Go enjoy it — I'll handle the rest 🎉
+          </div>
+          <div class="msg-time">9:19 PM</div>
+        </div>
+
+        <div class="msg user" id="reply2" style="display:none">
+          <div class="msg-bubble">I actually finished it this afternoon before the party! Submitted at like 5:30 PM.</div>
+          <div class="msg-time">9:19 PM</div>
+        </div>
+
+        <div class="msg ai" id="reply2-response" style="display:none">
+          <div class="msg-bubble">
+            WAIT — you did?! 🎉🎉🎉 I don't see it in Canvas yet but it might be syncing. <br><br>
+            That's huge — you knocked it out before the party like a pro. I'm updating your day score right now.<br><br>
+            <strong>Day Score: 65 → 88 🚀</strong><br><br>
+            Enjoy the party! You earned it. 🥳
+          </div>
+          <div class="msg-time">9:19 PM</div>
+        </div>
+
+        <div class="msg user" id="reply3" style="display:none">
+          <div class="msg-bubble">Look, I know I was supposed to do it at 4-6 but my friend needed help moving and it took longer than expected. I'm going to leave by 10 and finish it tonight, I promise.</div>
+          <div class="msg-time">9:20 PM</div>
+        </div>
+
+        <div class="msg ai" id="reply3-response" style="display:none">
+          <div class="msg-bubble">
+            That makes total sense — helping a friend is important too! I'm logging that so I learn your patterns better. 📝<br><br>
+            Here's your plan:<br>
+            🚶 Leave at <strong>10 PM sharp</strong><br>
+            🚇 BART home = ~25 min<br>
+            💻 Start homework by <strong>10:30 PM</strong><br>
+            ⏰ Deadline: 11:59 PM = <strong>1h 29m to finish</strong><br><br>
+            That's tight but doable. Want me to set a "leave now" alarm at 9:58 PM? 🔔
+          </div>
+          <div class="msg-time">9:21 PM</div>
+          <div class="msg-quick-replies">
+            <div class="quick-reply" onclick="sendCustomReply('Yes, set that alarm!')">Yes, set alarm 🔔</div>
+            <div class="quick-reply" onclick="sendCustomReply('I\\'ll remember, no alarm needed')">I got it, thanks</div>
+          </div>
+        </div>
+
+        <div class="msg ai" id="extra-msg-1" style="display:none">
+          <div class="msg-bubble">
+            Done! ⏰ You'll get a buzzy notification at 9:58 PM. You've got this Ishi — now go have fun!
+          </div>
+          <div class="msg-time">9:21 PM</div>
+        </div>
+
+      </div>
+
+      <!-- Chat input -->
+      <div class="chat-input-bar">
+        <input class="chat-input" id="chatInput" placeholder="Talk to MOMentum Mom..." onkeydown="if(event.key==='Enter')sendMessage()"/>
+        <button class="chat-send" onclick="sendMessage()">↑</button>
+      </div>
+    </div>
+
+    <!-- ═══ LOCATION TAB ═══ -->
+    <div class="tab-page" id="tab-location">
+      <div class="map-view">
+        <div class="road" style="width:2px;height:100%;top:0;left:35%;"></div>
+        <div class="road" style="width:2px;height:100%;top:0;left:65%;opacity:0.5;"></div>
+        <div class="road" style="width:100%;height:2px;top:35%;left:0;"></div>
+        <div class="road" style="width:100%;height:3px;top:55%;left:0;opacity:0.9;"></div>
+        <div class="road" style="width:3px;height:100%;top:0;left:50%;opacity:0.9;"></div>
+        <svg class="route-svg" viewBox="0 0 390 300" preserveAspectRatio="none">
+          <path d="M 80 260 Q 120 220 140 170 Q 155 145 185 135" stroke="#3dbf85" stroke-width="3" fill="none" stroke-dasharray="6,4" opacity="0.6"/>
+          <path d="M 185 135 Q 220 110 255 85" stroke="#8b6fd4" stroke-width="2.5" fill="none" stroke-dasharray="4,6" opacity="0.5"/>
+        </svg>
+        <div class="map-pin" style="left:21%;top:72%;">
+          <div class="pin-bubble past"><div class="pin-dot" style="background:#a09888;"></div>🛏 Home</div>
+          <div class="pin-tail" style="background:#a09888;"></div><div class="pin-base" style="background:#a09888;"></div>
+        </div>
+        <div class="map-pin" style="left:47%;top:38%;">
+          <div class="pin-bubble past"><div class="pin-dot" style="background:#4da6e8;"></div>🎓 SFSU</div>
+          <div class="pin-tail" style="background:#4da6e8;"></div><div class="pin-base" style="background:#4da6e8;"></div>
+        </div>
+        <div class="my-location" style="position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);">
+          <div class="loc-ring"></div><div class="loc-pulse"></div>
+        </div>
+        <div class="map-pin" style="left:48%;top:15%;">
+          <div class="pin-bubble active"><div class="pin-dot" style="background:#3dbf85;"></div>🌯 Chipotle</div>
+          <div class="pin-tail" style="background:#3dbf85;"></div><div class="pin-base" style="background:#3dbf85;"></div>
+        </div>
+        <div class="map-pin" style="left:74%;top:5%;">
+          <div class="pin-bubble" style="border-color:var(--lavender-dark);opacity:0.7;"><div class="pin-dot" style="background:#8b6fd4;"></div>🎉 Party</div>
+          <div class="pin-tail" style="background:#8b6fd4;opacity:0.5;"></div><div class="pin-base" style="background:#8b6fd4;opacity:0.5;"></div>
+        </div>
+        <div class="map-controls">
+          <button class="map-btn">＋</button>
+          <button class="map-btn">－</button>
+          <button class="map-btn">🎯</button>
+        </div>
+        <div class="map-status">
+          <div class="map-status-icon">🌯</div>
+          <div class="map-status-text">
+            <div class="map-status-title">Chipotle — Mission St</div>
+            <div class="map-status-sub">Eating lunch · HR 72 bpm · ~28 min left</div>
+          </div>
+          <div class="map-status-time">Now</div>
+        </div>
+      </div>
+
+      <div class="log-section">
+        <div class="log-title">Today's Journey</div>
+
+        <div class="log-item">
+          <div class="log-icon-col"><div class="log-icon" style="background:var(--surface2);">🛏</div></div>
+          <div class="log-content">
+            <div class="log-place">Home</div><div class="log-addr">2847 Sunset Blvd, SF</div>
+            <div class="log-time-row"><div class="log-time">7:00 – 8:45 AM</div><div class="log-duration" style="background:var(--surface2);color:var(--text3);">1h 45m</div></div>
+            <div class="log-activity-row"><div class="log-act" style="background:var(--mint);color:var(--mint-text);">😴 Woke up</div><div class="log-act" style="background:var(--butter);color:var(--butter-text);">☕ Morning</div></div>
+          </div>
+        </div>
+
+        <div class="log-item">
+          <div class="log-icon-col"><div class="log-icon" style="background:var(--sky);">🚌</div></div>
+          <div class="log-content">
+            <div class="log-place">Transit · MUNI Bus</div><div class="log-addr">Sunset → SFSU</div>
+            <div class="log-time-row"><div class="log-time">8:45 – 9:00 AM</div><div class="log-duration" style="background:var(--sky);color:var(--sky-text);">15m</div></div>
+            <div class="log-activity-row"><div class="log-act" style="background:var(--lavender);color:var(--lavender-text);">🎵 Listening</div></div>
+          </div>
+        </div>
+
+        <div class="log-item">
+          <div class="log-icon-col"><div class="log-icon" style="background:var(--sky);">🎓</div></div>
+          <div class="log-content">
+            <div class="log-place">SFSU — Lecture Hall C</div><div class="log-addr">1600 Holloway Ave, SF</div>
+            <div class="log-time-row"><div class="log-time">9:00 – 11:30 AM</div><div class="log-duration" style="background:var(--sky);color:var(--sky-text);">2h 30m</div></div>
+            <div class="log-activity-row"><div class="log-act" style="background:var(--sky);color:var(--sky-text);">📖 Class</div><div class="log-act" style="background:var(--mint);color:var(--mint-text);">✏️ Studying</div></div>
+          </div>
+        </div>
+
+        <div class="log-item">
+          <div class="log-icon-col"><div class="log-icon" style="background:var(--surface2);">🚇</div></div>
+          <div class="log-content">
+            <div class="log-place">Transit · BART</div><div class="log-addr">Glen Park → 24th St Mission</div>
+            <div class="log-time-row"><div class="log-time">11:45 AM – 12:20 PM</div><div class="log-duration" style="background:var(--surface2);color:var(--text3);">35m</div></div>
+            <div class="log-activity-row"><div class="log-act" style="background:var(--lavender);color:var(--lavender-text);">🎵 Music</div><div class="log-act" style="background:var(--peach);color:var(--peach-text);">📵 IG 18m</div></div>
+          </div>
+        </div>
+
+        <div class="log-item">
+          <div class="log-icon-col"><div class="log-icon current" style="background:var(--mint);">🌯</div></div>
+          <div class="log-content current">
+            <div class="log-place" style="color:var(--mint-dark);">Chipotle — Mission St ● Now</div>
+            <div class="log-addr">2945 Mission St, SF</div>
+            <div class="log-time-row"><div class="log-time">12:30 PM – ongoing</div><div class="log-duration" style="background:var(--mint);color:var(--mint-text);">~25m</div></div>
+            <div class="log-activity-row"><div class="log-act" style="background:var(--mint);color:var(--mint-text);">🍽 Eating</div><div class="log-act" style="background:var(--lavender);color:var(--lavender-text);">🎵 AirPods</div></div>
+          </div>
+        </div>
+
+        <div class="log-item">
+          <div class="log-icon-col"><div class="log-icon" style="background:var(--lavender);opacity:0.6;">📚</div></div>
+          <div class="log-content predicted">
+            <div class="log-place" style="color:var(--lavender-dark);">📍 Predicted: Library (Study)</div>
+            <div class="log-addr">CS 301 homework block · 4–6 PM</div>
+            <div class="log-time-row"><div class="log-time">~4:00 PM</div><div class="log-duration" style="background:var(--lavender);color:var(--lavender-text);">2h</div></div>
+          </div>
+        </div>
+
+        <div class="log-item">
+          <div class="log-icon-col"><div class="log-icon" style="background:var(--rose);opacity:0.6;">🎉</div></div>
+          <div class="log-content predicted" style="border-color:var(--rose-dark);">
+            <div class="log-place" style="color:var(--rose-dark);">🎉 Jake's Birthday Party</div>
+            <div class="log-addr">2847 Valencia St · Unexpected event</div>
+            <div class="log-time-row"><div class="log-time">~7:00 PM</div><div class="log-duration" style="background:var(--rose);color:var(--rose-text);">Late night</div></div>
+          </div>
+        </div>
+
+        <div class="bottom-space"></div>
+      </div>
+    </div>
+
+    <!-- ═══ TASKS TAB ═══ -->
+    <div class="tab-page" id="tab-tasks">
+      <div style="padding:20px 24px 16px;">
+        <div style="font-size:22px;font-weight:900;color:var(--text);letter-spacing:-0.3px;">Your Tasks</div>
+        <div style="font-size:13px;color:var(--text3);font-weight:600;margin-top:4px;">2 urgent · Schedule adjusted for party 🎉</div>
+      </div>
+      <div style="padding:0 24px 8px;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--peach-text);">🔴 Overdue</div>
+      <div class="task" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-info"><div class="task-name">Email Prof. Martinez re: office hours</div><div class="task-tags"><span class="tag tag-notion">Notion</span><span class="tag tag-urgent">2 days overdue</span></div></div>
+        <div class="task-due" style="color:var(--peach-text);">Bus 3PM</div>
+      </div>
+      <div style="padding:8px 24px 8px;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--butter-text);">🟠 Due Today</div>
+      <div class="task" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-info"><div class="task-name">CS 301 — Problem Set 3</div><div class="task-tags"><span class="tag tag-canvas">Canvas</span><span class="tag tag-urgent">4–6 PM</span></div></div>
+        <div class="task-due" style="color:var(--peach-text);">11:59 PM</div>
+      </div>
+      <div class="task" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-info"><div class="task-name">Reply to group project chat</div><div class="task-tags"><span class="tag tag-notion">Notion</span></div></div>
+        <div class="task-due">Today</div>
+      </div>
+      <div style="padding:8px 24px 8px;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--sky-text);">📅 Upcoming</div>
+      <div class="task" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-info"><div class="task-name">ECON 201 — Keynesian paper</div><div class="task-tags"><span class="tag tag-canvas">Canvas</span></div></div>
+        <div class="task-due">Thu</div>
+      </div>
+      <div class="task" onclick="toggleTask(this)">
+        <div class="task-check"></div>
+        <div class="task-info"><div class="task-name">🏋️ Gym (moved from today)</div><div class="task-tags"><span class="tag tag-event">Rescheduled</span></div></div>
+        <div class="task-due">Tomorrow 8AM</div>
+      </div>
+      <div style="padding:8px 24px 8px;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--mint-text);">✅ Done</div>
+      <div class="task" onclick="toggleTask(this)">
+        <div class="task-check done"></div>
+        <div class="task-info"><div class="task-name done">Read Ch. 4 Algorithms</div><div class="task-tags"><span class="tag tag-canvas">Canvas</span><span class="tag tag-done">Done ✓</span></div></div>
+        <div class="task-due">9 AM ✓</div>
+      </div>
+      <div class="bottom-space"></div>
+    </div>
+
+    <!-- ═══ RECAP TAB ═══ -->
+    <div class="tab-page" id="tab-recap">
+      <div style="padding:20px 24px 4px;">
+        <div style="font-size:22px;font-weight:900;color:var(--text);letter-spacing:-0.3px;">Your Recap</div>
+      </div>
+
+      <!-- Period selector -->
+      <div style="display:flex;gap:8px;padding:10px 24px 16px;">
+        <div class="period-btn active" onclick="selectPeriod(this)">Today</div>
+        <div class="period-btn" onclick="selectPeriod(this)">Week</div>
+        <div class="period-btn" onclick="selectPeriod(this)">Month</div>
+      </div>
+
+      <!-- Big score arc card -->
+      <div style="margin:0 24px 14px;background:var(--card);border-radius:24px;padding:22px;box-shadow:var(--shadow-sm);border:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:14px;">Day Score</div>
+        <div style="display:flex;align-items:center;gap:18px;margin-bottom:18px;">
+          <div style="position:relative;width:100px;height:100px;flex-shrink:0;">
+            <svg width="100" height="100" viewBox="0 0 100 100" style="transform:rotate(-90deg);">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="var(--surface2)" stroke-width="9"/>
+              <circle cx="50" cy="50" r="42" fill="none" stroke="url(#recapGrad)" stroke-width="9"
+                stroke-dasharray="264" stroke-dashoffset="92" stroke-linecap="round"/>
+              <defs>
+                <linearGradient id="recapGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#3dbf85"/>
+                  <stop offset="100%" stop-color="#4da6e8"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+              <div style="font-size:28px;font-weight:900;color:var(--text);letter-spacing:-1px;line-height:1;">65</div>
+              <div style="font-size:11px;color:var(--text3);font-weight:700;">/100</div>
+            </div>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:22px;font-weight:900;letter-spacing:-0.5px;margin-bottom:4px;">😊 Good</div>
+            <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px;line-height:1.4;">1 of 5 tasks done. Gym and homework still ahead tonight.</div>
+            <div style="display:inline-flex;align-items:center;gap:6px;background:var(--butter);color:var(--butter-text);border-radius:100px;padding:5px 12px;font-size:11px;font-weight:800;">🔥 3-day streak</div>
+          </div>
+        </div>
+
+        <!-- Progress bars -->
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:14px;width:20px;text-align:center;">✅</span>
+            <span style="font-size:12px;font-weight:700;color:var(--text2);width:60px;">Tasks</span>
+            <div style="flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;"><div style="width:20%;height:100%;background:#3dbf85;border-radius:4px;"></div></div>
+            <span style="font-size:11px;font-weight:800;color:var(--text);width:32px;text-align:right;">1/5</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:14px;width:20px;text-align:center;">🧠</span>
+            <span style="font-size:12px;font-weight:700;color:var(--text2);width:60px;">Focus</span>
+            <div style="flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;"><div style="width:55%;height:100%;background:#4da6e8;border-radius:4px;"></div></div>
+            <span style="font-size:11px;font-weight:800;color:var(--text);width:32px;text-align:right;">55%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:14px;width:20px;text-align:center;">👟</span>
+            <span style="font-size:12px;font-weight:700;color:var(--text2);width:60px;">Activity</span>
+            <div style="flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;"><div style="width:42%;height:100%;background:#e8a020;border-radius:4px;"></div></div>
+            <span style="font-size:11px;font-weight:800;color:var(--text);width:32px;text-align:right;">4.2k</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:14px;width:20px;text-align:center;">😴</span>
+            <span style="font-size:12px;font-weight:700;color:var(--text2);width:60px;">Sleep</span>
+            <div style="flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;"><div style="width:65%;height:100%;background:#8b6fd4;border-radius:4px;"></div></div>
+            <span style="font-size:11px;font-weight:800;color:var(--text);width:32px;text-align:right;">6.5h</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:14px;width:20px;text-align:center;">📱</span>
+            <span style="font-size:12px;font-weight:700;color:var(--text2);width:60px;">Screen</span>
+            <div style="flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;"><div style="width:74%;height:100%;background:#e85080;border-radius:4px;"></div></div>
+            <span style="font-size:11px;font-weight:800;color:var(--text);width:32px;text-align:right;">3h42</span>
+          </div>
+        </div>
+
+        <!-- Achievements -->
+        <div style="display:flex;gap:8px;margin-top:16px;overflow-x:auto;padding-bottom:2px;">
+          <div style="flex-shrink:0;background:var(--mint);border:1px solid var(--mint-dark);border-radius:14px;padding:10px 12px;text-align:center;min-width:70px;">
+            <div style="font-size:22px;margin-bottom:4px;">🎓</div>
+            <div style="font-size:10px;font-weight:800;color:var(--mint-text);line-height:1.3;">On Time<br>to Class</div>
+          </div>
+          <div style="flex-shrink:0;background:var(--mint);border:1px solid var(--mint-dark);border-radius:14px;padding:10px 12px;text-align:center;min-width:70px;">
+            <div style="font-size:22px;margin-bottom:4px;">🔥</div>
+            <div style="font-size:10px;font-weight:800;color:var(--mint-text);line-height:1.3;">3-Day<br>Streak</div>
+          </div>
+          <div style="flex-shrink:0;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:10px 12px;text-align:center;min-width:70px;opacity:0.5;">
+            <div style="font-size:22px;margin-bottom:4px;">🏋️</div>
+            <div style="font-size:10px;font-weight:800;color:var(--text3);line-height:1.3;">Gym<br>Today</div>
+          </div>
+          <div style="flex-shrink:0;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:10px 12px;text-align:center;min-width:70px;opacity:0.5;">
+            <div style="font-size:22px;margin-bottom:4px;">📝</div>
+            <div style="font-size:10px;font-weight:800;color:var(--text3);line-height:1.3;">All Tasks<br>Done</div>
+          </div>
+          <div style="flex-shrink:0;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:10px 12px;text-align:center;min-width:70px;opacity:0.5;">
+            <div style="font-size:22px;margin-bottom:4px;">🌙</div>
+            <div style="font-size:10px;font-weight:800;color:var(--text3);line-height:1.3;">7h+<br>Sleep</div>
+          </div>
+        </div>
+
+        <!-- Win banner -->
+        <div style="margin-top:14px;padding:12px 14px;background:linear-gradient(135deg,var(--mint),var(--sky));border-radius:14px;display:flex;align-items:center;gap:10px;">
+          <div style="font-size:22px;">🎉</div>
+          <div>
+            <div style="font-size:13px;font-weight:800;color:var(--text);">You made every 9 AM class this month!</div>
+            <div style="font-size:11px;color:var(--text2);font-weight:600;">That's 8 in a row. Keep it going tomorrow. 💪</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screen time card -->
+      <div style="margin:0 24px 14px;background:var(--card);border-radius:24px;padding:20px;box-shadow:var(--shadow-sm);border:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:14px;">Screen Time · 3h 42m today</div>
+
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:32px;height:32px;border-radius:9px;background:var(--peach);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">📸</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);flex:1;">Instagram</div>
+            <div style="flex:2;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;"><div style="width:72%;height:100%;background:#e85080;border-radius:3px;"></div></div>
+            <div style="font-size:12px;font-weight:800;color:var(--text2);width:42px;text-align:right;">1h 22m</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:32px;height:32px;border-radius:9px;background:var(--sky);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🌐</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);flex:1;">Chrome</div>
+            <div style="flex:2;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;"><div style="width:50%;height:100%;background:#4da6e8;border-radius:3px;"></div></div>
+            <div style="font-size:12px;font-weight:800;color:var(--text2);width:42px;text-align:right;">58m</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:32px;height:32px;border-radius:9px;background:var(--butter);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">📝</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);flex:1;">Notion</div>
+            <div style="flex:2;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;"><div style="width:28%;height:100%;background:#e8a020;border-radius:3px;"></div></div>
+            <div style="font-size:12px;font-weight:800;color:var(--text2);width:42px;text-align:right;">32m</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:32px;height:32px;border-radius:9px;background:var(--rose);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">📺</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);flex:1;">Netflix</div>
+            <div style="flex:2;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;"><div style="width:24%;height:100%;background:#e85080;border-radius:3px;opacity:0.55;"></div></div>
+            <div style="font-size:12px;font-weight:800;color:var(--text2);width:42px;text-align:right;">28m</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:32px;height:32px;border-radius:9px;background:var(--mint);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🎓</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);flex:1;">Canvas</div>
+            <div style="flex:2;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;"><div style="width:18%;height:100%;background:#3dbf85;border-radius:3px;"></div></div>
+            <div style="font-size:12px;font-weight:800;color:var(--text2);width:42px;text-align:right;">22m</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly summary teaser -->
+      <div style="margin:0 24px 14px;background:linear-gradient(135deg,#2d2820,#1e1a28);border-radius:20px;padding:20px;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--mint-dark);margin-bottom:8px;">February Summary</div>
+        <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:12px;">Your best month yet 🚀</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="background:rgba(255,255,255,0.06);border-radius:12px;padding:12px;">
+            <div style="font-size:22px;font-weight:900;color:#fff;">21</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:700;">Classes attended</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.06);border-radius:12px;padding:12px;">
+            <div style="font-size:22px;font-weight:900;color:#fff;">34</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:700;">Tasks completed</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.06);border-radius:12px;padding:12px;">
+            <div style="font-size:22px;font-weight:900;color:#fff;">8</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:700;">Gym sessions</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.06);border-radius:12px;padding:12px;">
+            <div style="font-size:22px;font-weight:900;color:#3dbf85;">6.8h</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:700;">Avg. sleep</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-space"></div>
+    </div>
+
+  </div><!-- end screen -->
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <div class="nav-item-m active" id="nav-home" onclick="switchTab('home')">
+      <div class="nav-icon-wrap"><div class="nav-icon-m">⚡</div></div>
+      <div class="nav-label">Now</div>
+    </div>
+    <div class="nav-item-m" id="nav-chat" onclick="switchTab('chat')">
+      <div class="nav-icon-wrap">
+        <div class="nav-icon-m">💬</div>
+        <div class="nav-badge-m">1</div>
+      </div>
+      <div class="nav-label">MOM</div>
+    </div>
+    <div class="nav-item-m" id="nav-location" onclick="switchTab('location')">
+      <div class="nav-icon-wrap"><div class="nav-icon-m">📍</div></div>
+      <div class="nav-label">Location</div>
+    </div>
+    <div class="nav-item-m" id="nav-tasks" onclick="switchTab('tasks')">
+      <div class="nav-icon-wrap">
+        <div class="nav-icon-m">📋</div>
+        <div class="nav-badge-m">4</div>
+      </div>
+      <div class="nav-label">Tasks</div>
+    </div>
+    <div class="nav-item-m" id="nav-recap" onclick="switchTab('recap')">
+      <div class="nav-icon-wrap"><div class="nav-icon-m">📊</div></div>
+      <div class="nav-label">Recap</div>
+    </div>
+  </div>
+
+</div><!-- end phone -->
+
+<script>
+// Clock
+function updateClock() {
+  const now = new Date();
+  let h = now.getHours() % 12 || 12;
+  const m = now.getMinutes().toString().padStart(2,'0');
+  document.getElementById('status-time').textContent = h + ':' + m;
+}
+updateClock(); setInterval(updateClock, 1000);
+
+// Theme toggle
+let isDark = false;
+function toggleTheme() {
+  isDark = !isDark;
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  document.querySelectorAll('.theme-toggle').forEach(btn => btn.textContent = isDark ? '☀️' : '🌙');
+}
+
+// Tab switching
+function switchTab(tab) {
+  ['home','chat','location','tasks','recap'].forEach(t => {
+    const page = document.getElementById('tab-' + t);
+    const nav = document.getElementById('nav-' + t);
+    if (page) page.classList.toggle('active', t === tab);
+    if (nav) nav.classList.toggle('active', t === tab);
+  });
+  document.getElementById('screen').scrollTop = 0;
+  // hide push notif when opening chat
+  if (tab === 'chat') {
+    document.getElementById('pushNotif1').classList.remove('show');
+  }
+}
+
+// Push notification show
+setTimeout(() => {
+  document.getElementById('pushNotif1').classList.add('show');
+}, 2500);
+
+function openChatFromPush() {
+  switchTab('chat');
+}
+
+// Task toggle
+function toggleTask(task) {
+  const check = task.querySelector('.task-check');
+  const name = task.querySelector('.task-name');
+  check.classList.toggle('done');
+  name.classList.toggle('done');
+  if (check.classList.contains('done')) {
+    task.querySelectorAll('.tag-urgent').forEach(t => { t.className='tag tag-done'; t.textContent='Done ✓'; });
+  }
+}
+
+// Quick replies
+function sendQuickReply(btn, replyId) {
+  // Hide all quick replies in that message
+  const siblingReplies = btn.closest('.msg-quick-replies');
+  if (siblingReplies) siblingReplies.style.display = 'none';
+
+  // Show user reply and AI response
+  const userMsg = document.getElementById(replyId);
+  const aiResponse = document.getElementById(replyId + '-response');
+  if (userMsg) { userMsg.style.display='flex'; scrollChat(); }
+  setTimeout(() => {
+    if (aiResponse) { aiResponse.style.display='flex'; scrollChat(); }
+  }, 900);
+}
+
+// ─── BACKEND CONFIG ───────────────────────────────────────────
+const BACKEND_URL = "http://localhost:8000"; // change to deployed URL in production
+
+function getUserState() {
+  return {
+    location: "home",
+    battery: 18,
+    tab: document.querySelector('.nav-item-m.active')?.id?.replace('nav-', '') || 'home',
+    tasks_done: document.querySelectorAll('.task-check.done').length,
+    tasks_total: document.querySelectorAll('.task-check').length,
+    screen_time: "3h 42m",
+    focus_score: 55,
+    sleep: "6.5h",
+    steps: 4200,
+    next_deadline: "COGS 118A assignment due at 11:59 PM"
+  };
+}
+
+function addAIMessage(text) {
+  const msgs = document.getElementById('chatMessages');
+  const aiDiv = document.createElement('div');
+  aiDiv.className = 'msg ai';
+  aiDiv.innerHTML = `<div class="msg-bubble">${text}</div><div class="msg-time">just now</div>`;
+  msgs.appendChild(aiDiv);
+  scrollChat();
+}
+
+function addTypingIndicator() {
+  const msgs = document.getElementById('chatMessages');
+  const typing = document.createElement('div');
+  typing.className = 'msg ai';
+  typing.id = 'typing-indicator';
+  typing.innerHTML = `<div class="msg-bubble" style="color:var(--text3);">MOMentum is thinking...</div>`;
+  msgs.appendChild(typing);
+  scrollChat();
+  return typing;
+}
+
+async function callBackend(message) {
+  const typing = addTypingIndicator();
+  try {
+    const res = await fetch(`${BACKEND_URL}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message,
+        user_state: getUserState()
+      })
+    });
+    if (!res.ok) throw new Error('Backend error');
+    const data = await res.json();
+    typing.remove();
+    addAIMessage(data.reply);
+  } catch (err) {
+    typing.remove();
+    // Fallback to scripted replies if backend is offline
+    addAIMessage(generateFallbackReply(message));
+  }
+}
+
+// Send custom message (quick reply buttons)
+function sendCustomReply(text) {
+  const msgs = document.getElementById('chatMessages');
+  const userDiv = document.createElement('div');
+  userDiv.className = 'msg user';
+  userDiv.innerHTML = `<div class="msg-bubble">${text}</div><div class="msg-time">just now</div>`;
+  msgs.appendChild(userDiv);
+  scrollChat();
+  callBackend(text);
+}
+
+// Send typed message
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  const msgs = document.getElementById('chatMessages');
+  const userDiv = document.createElement('div');
+  userDiv.className = 'msg user';
+  userDiv.innerHTML = `<div class="msg-bubble">${text}</div><div class="msg-time">just now</div>`;
+  msgs.appendChild(userDiv);
+  scrollChat();
+  callBackend(text);
+}
+
+// Fallback replies when backend is offline (demo mode)
+function generateFallbackReply(text) {
+  const t = text.toLowerCase();
+  if (t.includes('gym') || t.includes('workout')) return "I moved your gym session to tomorrow 8 AM since you've got the party tonight. Still want to keep that? 🏋️";
+  if (t.includes('done') || t.includes('finished') || t.includes('submitted')) return "Amazing!! 🎉 Your day score is going up for sure — you're crushing it!";
+  if (t.includes('tired') || t.includes('sleep')) return "I get it. Sleep is important too. Tomorrow's 8 AM class still needs you though. Try to be home by midnight 🌙";
+  if (t.includes('help') || t.includes('stuck')) return "Tell me what you're stuck on — I can help you break it down 📚";
+  if (t.includes('battery') || t.includes('charge')) return "Charge NOW before you leave 🔌 At 18%, you'll be dead by 9 PM. Plug in! 🪫";
+  return "Got it, I'm logging that. Is there anything else I should know about today? 📝";
+}
+
+// Load live nudge from backend on startup
+async function loadLiveNudge() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/nudge`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_state: getUserState() })
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    const nudgeEls = document.querySelectorAll('.nudge-text');
+    if (nudgeEls.length > 0) {
+      nudgeEls[0].textContent = data.nudge;
+    }
+  } catch (e) {
+    // backend offline, keep static nudges
+  }
+}
+
+// Load nudge when page loads
+window.addEventListener('load', () => {
+  setTimeout(loadLiveNudge, 1000);
+});
+
+function selectPeriod(btn) {
+  btn.closest('div').querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function scrollChat() {
+  const msgs = document.getElementById('chatMessages');
+  setTimeout(() => msgs.scrollTop = msgs.scrollHeight, 50);
+}
+</script>
+</body>
+</html>
