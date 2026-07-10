@@ -263,6 +263,68 @@ body {
 .stat-val { font-size:18px; font-weight:900; color:var(--text); letter-spacing:-0.5px; }
 .stat-label { font-size:10px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; }
 
+/* Live world card */
+.live-world {
+  margin:16px 24px 0;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:24px;
+  box-shadow:var(--shadow-sm);
+  overflow:hidden;
+}
+.live-world-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 16px 12px;
+}
+.live-world-title { font-size:16px; font-weight:900; color:var(--text); letter-spacing:-0.2px; }
+.live-world-source { font-size:10px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:0.8px; }
+.live-world-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  padding:0 16px 16px;
+}
+.live-tile {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:13px;
+  min-height:102px;
+}
+.live-tile.weather { background:linear-gradient(135deg,var(--sky),rgba(255,255,255,0.75)); }
+.live-tile.sky { background:linear-gradient(135deg,#1f1a3d,#0d1024); color:white; position:relative; overflow:hidden; }
+.live-tile.sky::after {
+  content:'✦ ✧ ✦';
+  position:absolute; right:12px; top:10px;
+  color:rgba(255,255,255,0.45);
+  letter-spacing:8px;
+  font-size:10px;
+}
+.live-label { font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:0.9px; color:var(--text3); margin-bottom:6px; }
+.live-tile.sky .live-label { color:rgba(255,255,255,0.55); }
+.live-main { font-size:21px; font-weight:900; color:var(--text); letter-spacing:-0.6px; line-height:1.05; }
+.live-tile.sky .live-main { color:white; }
+.live-sub { font-size:11px; font-weight:700; color:var(--text2); line-height:1.35; margin-top:6px; }
+.live-tile.sky .live-sub { color:rgba(255,255,255,0.64); }
+.news-strip {
+  border-top:1px solid var(--border);
+  padding:12px 16px 14px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.news-item {
+  display:flex; gap:8px; align-items:flex-start;
+  font-size:12px; font-weight:800; color:var(--text);
+  line-height:1.35;
+}
+.news-dot {
+  width:6px; height:6px; border-radius:50%;
+  background:var(--lavender-dark);
+  margin-top:5px;
+  flex-shrink:0;
+}
+
 /* Nudge cards */
 .nudge {
   margin:0 24px 10px; background:var(--card); border-radius:18px;
@@ -592,9 +654,108 @@ body {
   transition: all 0.2s;
 }
 .period-btn.active { background:var(--lavender); color:var(--lavender-text); border-color:var(--lavender-dark); }
+
+/* ─────────────────────────────────
+   PLAYFUL DECOR: POKEMON RAIN + WAND CURSOR
+───────────────────────────────── */
+.pokemon-rain {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 300;
+}
+
+.falling-pokemon {
+  position: absolute;
+  top: -72px;
+  width: var(--size, 46px);
+  height: var(--size, 46px);
+  object-fit: contain;
+  filter: drop-shadow(0 8px 10px rgba(0,0,0,0.18));
+  animation: pokemonFall var(--duration, 9s) linear forwards;
+  opacity: 0.9;
+}
+
+@keyframes pokemonFall {
+  0% {
+    transform: translate3d(0, -80px, 0) rotate(0deg);
+    opacity: 0;
+  }
+  8% { opacity: 0.9; }
+  100% {
+    transform: translate3d(var(--drift, 40px), calc(100vh + 100px), 0) rotate(var(--spin, 220deg));
+    opacity: 0;
+  }
+}
+
+.wand-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 34px;
+  height: 34px;
+  pointer-events: none;
+  z-index: 400;
+  transform: translate(-100px, -100px);
+  filter: drop-shadow(0 0 12px rgba(255,255,255,0.9));
+}
+
+.wand-cursor::before {
+  content: '✦';
+  position: absolute;
+  left: 0;
+  top: -8px;
+  font-size: 24px;
+  color: #fff3a8;
+  text-shadow:
+    0 0 8px #fff,
+    0 0 16px #f8a8ff,
+    0 0 24px #8bd8ff;
+}
+
+.wand-cursor::after {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 12px;
+  width: 28px;
+  height: 5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #fff, #f8a8ff, #8bd8ff);
+  transform: rotate(42deg);
+  box-shadow: 0 0 14px rgba(248,168,255,0.95);
+}
+
+.wand-sparkle {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+  z-index: 399;
+  color: #fff3a8;
+  text-shadow: 0 0 8px #fff, 0 0 14px #f8a8ff;
+  animation: sparklePop 0.8s ease-out forwards;
+}
+
+.wand-sparkle::before { content: '✧'; }
+
+@keyframes sparklePop {
+  from {
+    transform: translate(-50%, -50%) scale(0.7) rotate(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(0) rotate(160deg);
+    opacity: 0;
+  }
+}
 </style>
 </head>
 <body>
+
+<div class="pokemon-rain" id="pokemonRain" aria-hidden="true"></div>
+<div class="wand-cursor" id="wandCursor" aria-hidden="true"></div>
 
 <div class="phone" id="phone">
   <div class="notch"></div>
@@ -674,6 +835,29 @@ body {
         <div class="stat-chip"><div class="stat-icon">📱</div><div class="stat-val" style="color:#8b6fd4;">3h 40m</div><div class="stat-label">Screen</div></div>
         <div class="stat-chip"><div class="stat-icon">✅</div><div class="stat-val" style="color:#3dbf85;">1/5</div><div class="stat-label">Tasks</div></div>
         <div class="stat-chip"><div class="stat-icon">😴</div><div class="stat-val" style="color:#e8a020;">6.5h</div><div class="stat-label">Sleep</div></div>
+      </div>
+
+      <!-- Live world: weather, sky, news -->
+      <div class="live-world">
+        <div class="live-world-head">
+          <div class="live-world-title">🌎 Live World</div>
+          <div class="live-world-source" id="liveSource">Connecting...</div>
+        </div>
+        <div class="live-world-grid">
+          <div class="live-tile weather">
+            <div class="live-label">Weather</div>
+            <div class="live-main" id="weatherTemp">--°</div>
+            <div class="live-sub" id="weatherDetail">Loading Open-Meteo...</div>
+          </div>
+          <div class="live-tile sky">
+            <div class="live-label">Tonight's stars</div>
+            <div class="live-main" id="skyName">Loading...</div>
+            <div class="live-sub" id="skyDetail">Checking the sky chart...</div>
+          </div>
+        </div>
+        <div class="news-strip" id="newsList">
+          <div class="news-item"><span class="news-dot"></span><span>Loading news API headlines...</span></div>
+        </div>
       </div>
 
       <!-- UNEXPECTED EVENTS -->
@@ -1407,7 +1591,7 @@ function sendQuickReply(btn, replyId) {
 }
 
 // ─── BACKEND CONFIG ───────────────────────────────────────────
-const BACKEND_URL = "http://localhost:8000"; // change to deployed URL in production
+const BACKEND_URL = "http://localhost:8004"; // change to deployed URL in production
 
 function getUserState() {
   return {
@@ -1523,9 +1707,84 @@ async function loadLiveNudge() {
   }
 }
 
+async function fetchJsonOrNull(url) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+function renderWeather(data) {
+  const weather = data || {
+    temperature: 64,
+    feels_like: 64,
+    condition: 'API offline',
+    wind_mph: 6,
+    sunset: '20:29',
+    source: 'fallback'
+  };
+
+  document.getElementById('weatherTemp').textContent = `${weather.temperature}°`;
+  document.getElementById('weatherDetail').textContent =
+    `${weather.condition} · feels ${weather.feels_like}° · wind ${weather.wind_mph} mph · sunset ${weather.sunset}`;
+}
+
+function renderSky(data) {
+  const sky = data || {
+    constellation: 'Cassiopeia',
+    note: 'A sparkling W in the northern sky.',
+    best_time: 'After 9 PM'
+  };
+
+  document.getElementById('skyName').textContent = sky.constellation;
+  document.getElementById('skyDetail').textContent = `${sky.note} Best: ${sky.best_time}.`;
+}
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function renderNews(data) {
+  const stories = data?.stories?.length ? data.stories : [
+    { title: 'News API is resting, but your tasks are not.', source: 'MOMentum' },
+    { title: 'Tiny progress beats dramatic panic every time.', source: 'MOMentum' },
+    { title: 'Charge phone, check deadline, do the next obvious thing.', source: 'MOMentum' }
+  ];
+
+  document.getElementById('newsList').innerHTML = stories.slice(0, 3).map(story => `
+    <div class="news-item">
+      <span class="news-dot"></span>
+      <span>${escapeHtml(story.title)} <span style="color:var(--text3);font-weight:700;">· ${escapeHtml(story.source)}</span></span>
+    </div>
+  `).join('');
+}
+
+async function loadLiveWorld() {
+  const [weather, news, sky] = await Promise.all([
+    fetchJsonOrNull(`${BACKEND_URL}/live/weather`),
+    fetchJsonOrNull(`${BACKEND_URL}/live/news`),
+    fetchJsonOrNull(`${BACKEND_URL}/live/sky`)
+  ]);
+
+  renderWeather(weather);
+  renderNews(news);
+  renderSky(sky);
+  document.getElementById('liveSource').textContent =
+    weather || news ? 'Live APIs' : 'Demo fallback';
+}
+
 // Load nudge when page loads
 window.addEventListener('load', () => {
   setTimeout(loadLiveNudge, 1000);
+  setTimeout(loadLiveWorld, 300);
 });
 
 function selectPeriod(btn) {
@@ -1537,6 +1796,55 @@ function scrollChat() {
   const msgs = document.getElementById('chatMessages');
   setTimeout(() => msgs.scrollTop = msgs.scrollHeight, 50);
 }
+
+// Decorative Pokemon rain and princess-wand cursor.
+const pokemonSprites = [25, 1, 4, 7, 39, 133, 143, 175, 151, 54, 104, 132];
+const pokemonRain = document.getElementById('pokemonRain');
+
+function dropPokemon() {
+  if (!pokemonRain) return;
+
+  const spriteId = pokemonSprites[Math.floor(Math.random() * pokemonSprites.length)];
+  const pokemon = document.createElement('img');
+  const size = 32 + Math.random() * 34;
+
+  pokemon.className = 'falling-pokemon';
+  pokemon.alt = '';
+  pokemon.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${spriteId}.png`;
+  pokemon.style.left = `${Math.random() * 100}vw`;
+  pokemon.style.setProperty('--size', `${size}px`);
+  pokemon.style.setProperty('--duration', `${7 + Math.random() * 6}s`);
+  pokemon.style.setProperty('--drift', `${-80 + Math.random() * 160}px`);
+  pokemon.style.setProperty('--spin', `${-260 + Math.random() * 520}deg`);
+
+  pokemonRain.appendChild(pokemon);
+  pokemon.addEventListener('animationend', () => pokemon.remove());
+}
+
+setInterval(dropPokemon, 850);
+for (let i = 0; i < 6; i++) setTimeout(dropPokemon, i * 240);
+
+const wandCursor = document.getElementById('wandCursor');
+let lastSparkle = 0;
+
+window.addEventListener('pointermove', (event) => {
+  if (wandCursor) {
+    wandCursor.style.transform = `translate(${event.clientX - 7}px, ${event.clientY - 22}px)`;
+  }
+
+  const now = Date.now();
+  if (now - lastSparkle < 38) return;
+  lastSparkle = now;
+
+  const sparkle = document.createElement('span');
+  sparkle.className = 'wand-sparkle';
+  sparkle.style.left = `${event.clientX}px`;
+  sparkle.style.top = `${event.clientY}px`;
+  sparkle.style.setProperty('--x', `${-18 + Math.random() * 36}px`);
+  sparkle.style.setProperty('--y', `${-18 + Math.random() * 36}px`);
+  document.body.appendChild(sparkle);
+  sparkle.addEventListener('animationend', () => sparkle.remove());
+});
 </script>
 </body>
 </html>
